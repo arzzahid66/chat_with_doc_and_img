@@ -1,9 +1,8 @@
-streamlit==1.8.0
-Pillow==8.0.0
-PyPDF2==1.26.0
+streamlit
+Pillow
+PyPDF2
 langchain
-python-dotenv==0.18.0
-sentence-transformers==2.2.0
+load_dotenv
 streamlit_chat
 ChatOpenAI
 google.generativeai
@@ -13,4 +12,5 @@ ConversationalRetrievalChain
 FAISS
 CharacterTextSplitter
 HuggingFaceEmbeddings
-load_dotenv
+os
+
