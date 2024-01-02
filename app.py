@@ -1,4 +1,3 @@
-# last 2 
 import streamlit as st
 from PIL import Image
 from PyPDF2 import PdfReader
@@ -15,12 +14,12 @@ from langchain.callbacks import get_openai_callback
 from sentence_transformers import SentenceTransformer
 from streamlit_chat import message
 import google.generativeai as genai
-import os 
+import os
 
 def main():
     load_dotenv()
     st.set_page_config(page_title="Chat with your file😊", page_icon="✨", layout="wide")
-    
+
     # Add emojis and styling to the header
     st.header("🌟 Chat with your Document and Images 📄📸")
     st.subheader('By Abdul Rehman Zahid 😊')
@@ -41,10 +40,13 @@ def document_gpt_code():
         st.session_state.processComplete = None
     if "user_text_input" not in st.session_state:
         st.session_state.user_text_input = None
+    if "openai_api_key" not in st.session_state:
+        st.session_state.openai_api_key = None  # Added line for OpenAI API Key
 
     with st.sidebar:
         uploaded_files = st.file_uploader("Upload your file", type=['pdf', 'txt'], accept_multiple_files=True)
         st.session_state.user_text_input = st.text_area("Enter your text here:")
+        st.session_state.openai_api_key = st.text_input("Enter your OpenAI API Key:")
         embadings_button = st.button("Generate Embeddings")
         process_button = st.button("Process")
 
@@ -53,18 +55,26 @@ def document_gpt_code():
             st.warning("Please enter some text before generating embeddings.")
             st.stop()
 
+        if not st.session_state.openai_api_key:
+            st.warning("Please enter your OpenAI API Key.")
+            st.stop()
+
         files_text = get_files_text(uploaded_files)
         st.write("File loaded...")
         text_chunks = get_text_chunks(files_text + "\n" + st.session_state.user_text_input)
         st.write("File chunks created...")
         vetorestore = get_vectorstore(text_chunks)
         st.write("Vector Store Created...")
-        st.session_state.conversation = get_conversation_chain(vetorestore, st.secrets["OPENAI_API_KEY"])
+        st.session_state.conversation = get_conversation_chain(vetorestore, st.session_state.openai_api_key)
         st.session_state.processComplete = True
 
     if process_button:
         if not uploaded_files:
             st.warning("Please upload a file before processing.")
+            st.stop()
+
+        if not st.session_state.openai_api_key:
+            st.warning("Please enter your OpenAI API Key.")
             st.stop()
 
         files_text = get_files_text(uploaded_files)
@@ -73,7 +83,7 @@ def document_gpt_code():
         st.write("File chunks created...")
         vetorestore = get_vectorstore(text_chunks)
         st.write("Vector Store Created...")
-        st.session_state.conversation = get_conversation_chain(vetorestore, st.secrets["OPENAI_API_KEY"])
+        st.session_state.conversation = get_conversation_chain(vetorestore, st.session_state.openai_api_key)
         st.session_state.processComplete = True
 
     # Move the conversation history container outside the 'if' block
@@ -101,6 +111,7 @@ def gemini_ai_pro_vision_code():
     genai.configure(api_key=GOOGLE_API_KEY)
 
     openai_key = st.secrets["OPENAI_API_KEY"]
+    
     st.title("Gemini AI Pro Vision")
 
     # Your Streamlit code for uploading an image
